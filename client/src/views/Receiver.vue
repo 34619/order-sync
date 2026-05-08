@@ -5,17 +5,25 @@ import { useStrategiesStore } from '../stores/strategies'
 
 const store = useStrategiesStore()
 
-// 接收端配置状态
+const accountName = ref('v4live_232')
+
+// 基础配置
 const multiplier = ref(10)
 const signalEnabled = ref(true)
 const signalInterval = ref<'cumulative' | 'override'>('cumulative')
-const tradeStatus = ref<'reject' | 'transmit'>('transmit')
-const stopLoss = ref(100)
 const prePayment1 = ref(10)
 const prePayment2 = ref(0)
+
+// 成交状态
+const tradeTransmit = ref(true)
+
+// 止损设置
+const stopLoss = ref(100)
+const prePaymentReverse = ref('')
+
+// 配置模板
 const selectedTemplate = ref('')
 
-// 从已有策略加载配置
 onMounted(() => {
   store.fetchStrategies()
   if (store.strategies.length) {
@@ -27,121 +35,93 @@ onMounted(() => {
 })
 
 function handleSave() {
-  // 保存逻辑 - 后续接入 Supabase
   alert('配置已保存')
 }
 </script>
 
 <template>
   <Layout>
-    <div class="receiver">
-      <h2>接收端配置</h2>
+    <div class="page">
+      <div class="title-bar">接收端 account: {{ accountName }}</div>
 
       <!-- 基础配置 -->
-      <div class="config-section">
-        <h3>基础配置</h3>
-        <div class="config-row">
-          <span class="config-label">默认倍率</span>
-          <div class="config-value">
-            <input v-model.number="multiplier" type="number" class="input-green" />
+      <div class="section">
+        <div class="section-title">基础配置</div>
+        <div class="config-item">
+          <span class="label">默认倍率</span>
+          <span class="multiplier-badge">{{ multiplier }}</span>
+        </div>
+        <div class="config-item">
+          <span class="label">信号状态</span>
+          <div class="pill-group">
+            <button :class="['pill', !signalEnabled && 'pill-active-off']" @click="signalEnabled = false">关</button>
+            <button :class="['pill', signalEnabled && 'pill-active-on']" @click="signalEnabled = true">开</button>
           </div>
         </div>
-        <div class="config-row">
-          <span class="config-label">信号状态</span>
-          <div class="config-value toggle-group">
-            <button
-              :class="['toggle-btn', !signalEnabled ? 'active-off' : '']"
-              @click="signalEnabled = false"
-            >关</button>
-            <button
-              :class="['toggle-btn', signalEnabled ? 'active-on' : '']"
-              @click="signalEnabled = true"
-            >开</button>
+        <div class="config-item">
+          <span class="label">信号间隔</span>
+          <div class="pill-group">
+            <button :class="['pill', signalInterval === 'cumulative' && 'pill-active-on']" @click="signalInterval = 'cumulative'">累加制</button>
+            <button :class="['pill', signalInterval === 'override' && 'pill-active-on']" @click="signalInterval = 'override'">覆盖制</button>
           </div>
         </div>
-        <div class="config-row">
-          <span class="config-label">信号间隔</span>
-          <div class="config-value toggle-group">
-            <button
-              :class="['toggle-btn', signalInterval === 'cumulative' ? 'active-on' : '']"
-              @click="signalInterval = 'cumulative'"
-            >累加制</button>
-            <button
-              :class="['toggle-btn', signalInterval === 'override' ? 'active-on' : '']"
-              @click="signalInterval = 'override'"
-            >覆盖制</button>
-          </div>
-        </div>
-        <div class="config-row">
-          <span class="config-label">预付款</span>
-          <div class="config-value dual-input">
-            <div class="input-with-unit">
+        <div class="config-item">
+          <span class="label">预付款</span>
+          <div class="dual-percent">
+            <div class="percent-input">
               <input v-model.number="prePayment1" type="number" />
-              <span class="unit">%</span>
+              <span class="pct">%</span>
             </div>
-            <div class="input-with-unit">
+            <div class="percent-input">
               <input v-model.number="prePayment2" type="number" />
-              <span class="unit">%</span>
+              <span class="pct">%</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- 成交状态 -->
-      <div class="config-section">
-        <h3>成交状态</h3>
-        <div class="config-row">
-          <span class="config-label">成交状态</span>
-          <div class="config-value toggle-group">
-            <button
-              :class="['toggle-btn', tradeStatus === 'reject' ? 'active-on' : '']"
-              @click="tradeStatus = 'reject'"
-            >不传</button>
-            <button
-              :class="['toggle-btn', tradeStatus === 'transmit' ? 'active-off' : '']"
-              @click="tradeStatus = 'transmit'"
-            >传</button>
+      <div class="section">
+        <div class="section-title">成交状态</div>
+        <div class="config-item">
+          <span class="label">成交状态</span>
+          <div class="pill-group">
+            <button :class="['pill', !tradeTransmit && 'pill-active-on']" @click="tradeTransmit = false">不传</button>
+            <button :class="['pill', tradeTransmit && 'pill-active-warn']" @click="tradeTransmit = true">传</button>
           </div>
         </div>
       </div>
 
       <!-- 止损设置 -->
-      <div class="config-section">
-        <h3>止损设置</h3>
-        <div class="config-row">
-          <span class="config-label">止损设置</span>
-          <div class="config-value input-with-unit">
+      <div class="section">
+        <div class="section-title">止损设置</div>
+        <div class="config-item">
+          <span class="label">止损设置</span>
+          <div class="inline-input">
             <input v-model.number="stopLoss" type="number" />
             <span class="unit">%</span>
           </div>
         </div>
-        <div class="config-row">
-          <span class="config-label">预付款</span>
-          <div class="config-value select-wrapper">
-            <select v-model="selectedTemplate">
-              <option value="" disabled selected>选择需要反手的预付款</option>
-              <option value="10">10%</option>
-              <option value="20">20%</option>
-              <option value="50">50%</option>
-            </select>
-          </div>
+        <div class="config-item">
+          <span class="label">预付款</span>
+          <select v-model="prePaymentReverse" class="select-input">
+            <option value="" disabled selected>选择需要反手的预付款</option>
+            <option value="10">10%</option>
+            <option value="20">20%</option>
+            <option value="50">50%</option>
+          </select>
         </div>
       </div>
 
       <!-- 配置模板 -->
-      <div class="config-section">
-        <h3>配置模板</h3>
-        <div class="config-row">
-          <span class="config-label">模板</span>
-          <div class="config-value select-wrapper">
-            <select v-model="selectedTemplate">
-              <option value="" disabled selected>选择配置模板</option>
-              <option value="conservative">稳健型</option>
-              <option value="aggressive">激进型</option>
-              <option value="balanced">均衡型</option>
-            </select>
-          </div>
-        </div>
+      <div class="config-item template-row">
+        <span class="label">配置模板</span>
+        <select v-model="selectedTemplate" class="select-input">
+          <option value="" disabled selected>选择配置模板</option>
+          <option value="conservative">稳健型</option>
+          <option value="aggressive">激进型</option>
+          <option value="balanced">均衡型</option>
+        </select>
       </div>
 
       <button class="save-btn" @click="handleSave">保存设置</button>
@@ -150,34 +130,34 @@ function handleSave() {
 </template>
 
 <style scoped>
-.receiver {
-  max-width: 500px;
+.page {
+  max-width: 480px;
   margin: 0 auto;
 }
 
-.receiver h2 {
-  font-size: 1.1rem;
-  color: #fff;
-  margin-bottom: 16px;
+.title-bar {
   text-align: center;
-  padding-bottom: 12px;
+  color: #ccc;
+  font-size: 0.95rem;
+  padding-bottom: 14px;
   border-bottom: 1px solid #2a3f5f;
+  margin-bottom: 4px;
 }
 
-.config-section {
-  margin-bottom: 20px;
+.section {
+  border-bottom: 1px solid #1e2a4a;
 }
 
-.config-section h3 {
-  font-size: 0.9rem;
+.section-title {
   color: #4caf50;
+  font-size: 0.85rem;
   font-weight: 500;
-  margin-bottom: 2px;
-  padding-bottom: 8px;
+  padding: 10px 0 4px;
   border-bottom: 1px solid #2a3f5f;
+  margin-bottom: 0;
 }
 
-.config-row {
+.config-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -185,90 +165,117 @@ function handleSave() {
   border-bottom: 1px solid #1e2a4a;
 }
 
-.config-label {
+.config-item:last-child {
+  border-bottom: none;
+}
+
+.label {
   color: #ccc;
   font-size: 0.9rem;
-  min-width: 80px;
 }
 
-.config-value {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  justify-content: flex-end;
-}
-
-.config-value input {
-  width: 80px;
-  padding: 6px 10px;
-  background: #0f1729;
-  border: 1px solid #2a3f5f;
-  border-radius: 6px;
+.multiplier-badge {
+  background: #4caf50;
   color: #fff;
-  font-size: 0.95rem;
-  text-align: right;
+  padding: 4px 18px;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
-.config-value input:focus {
-  outline: none;
-  border-color: #4caf50;
-}
-
-.input-green {
-  color: #4caf50 !important;
-  font-weight: 700;
-  font-size: 1.1rem !important;
-}
-
-.toggle-group {
+.pill-group {
   display: flex;
-  gap: 0;
 }
 
-.toggle-btn {
+.pill {
   padding: 6px 14px;
-  border: 1px solid #2a3f5f;
-  background: #0f1729;
+  border: 1px solid #3a4f6f;
+  background: transparent;
   color: #8899aa;
   cursor: pointer;
   font-size: 0.85rem;
-  transition: all 0.2s;
+  transition: all 0.15s;
 }
 
-.toggle-btn:first-child {
+.pill:first-child {
   border-radius: 6px 0 0 6px;
 }
 
-.toggle-btn:last-child {
+.pill:last-child {
   border-radius: 0 6px 6px 0;
   border-left: none;
 }
 
-.active-on {
+.pill-active-on {
   background: #4caf50;
   color: #fff;
   border-color: #4caf50;
 }
 
-.active-off {
+.pill-active-off {
+  background: #555;
+  color: #fff;
+  border-color: #555;
+}
+
+.pill-active-warn {
   background: #e74c3c;
   color: #fff;
   border-color: #e74c3c;
 }
 
-.dual-input {
+.dual-percent {
+  display: flex;
   gap: 12px;
 }
 
-.input-with-unit {
+.percent-input {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.percent-input input {
+  width: 65px;
+  padding: 5px 8px;
+  background: #0f1729;
+  border: 1px solid #2a3f5f;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.percent-input input:focus {
+  outline: none;
+  border-color: #4caf50;
+}
+
+.pct {
+  color: #8899aa;
+  font-size: 0.85rem;
+}
+
+.inline-input {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.input-with-unit input {
-  width: 70px;
+.inline-input input {
+  width: 65px;
+  padding: 5px 8px;
+  background: #0f1729;
+  border: 1px solid #2a3f5f;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.inline-input input:focus {
+  outline: none;
+  border-color: #4caf50;
 }
 
 .unit {
@@ -276,34 +283,39 @@ function handleSave() {
   font-size: 0.85rem;
 }
 
-.select-wrapper select {
-  width: 100%;
-  padding: 8px 10px;
+.select-input {
+  padding: 7px 10px;
   background: #0f1729;
   border: 1px solid #2a3f5f;
-  border-radius: 6px;
+  border-radius: 4px;
   color: #8899aa;
   font-size: 0.85rem;
+  min-width: 180px;
 }
 
-.select-wrapper select:focus {
+.select-input:focus {
   outline: none;
   border-color: #4caf50;
 }
 
+.template-row {
+  padding: 14px 0;
+  border-bottom: none;
+}
+
 .save-btn {
   width: 100%;
-  padding: 14px;
-  background: #4caf50;
+  padding: 13px;
+  background: #55b895;
   color: #fff;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .save-btn:hover {
-  background: #45a049;
+  background: #48a687;
 }
 </style>

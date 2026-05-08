@@ -1,19 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import Layout from '../components/Layout.vue'
-import { useOrdersStore } from '../stores/orders'
 
-const store = useOrdersStore()
-
-// 发送端账号列表（用本地状态模拟，后续接入数据库）
-interface SenderAccount {
+interface Account {
   id: string
   name: string
   balance: number
   isCopying: boolean
 }
 
-const accounts = ref<SenderAccount[]>([
+const accounts = ref<Account[]>([
   { id: '1', name: 'v4live_232', balance: 10057.25, isCopying: true },
   { id: '2', name: 'v4live_5053', balance: 0, isCopying: false },
   { id: '3', name: 'v4live_5082', balance: 0, isCopying: false },
@@ -25,9 +21,14 @@ const accounts = ref<SenderAccount[]>([
 const showAddForm = ref(false)
 const newAccountName = ref('')
 
-onMounted(() => {
-  store.fetchOrders()
-})
+function formatBalance(n: number): string {
+  if (n === 0) return '0'
+  return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+function deleteAccount(id: string) {
+  accounts.value = accounts.value.filter(a => a.id !== id)
+}
 
 function addAccount() {
   if (!newAccountName.value.trim()) return
@@ -40,45 +41,30 @@ function addAccount() {
   newAccountName.value = ''
   showAddForm.value = false
 }
-
-function toggleCopy(id: string) {
-  const acc = accounts.value.find(a => a.id === id)
-  if (acc) acc.isCopying = !acc.isCopying
-}
-
-function deleteAccount(id: string) {
-  accounts.value = accounts.value.filter(a => a.id !== id)
-}
 </script>
 
 <template>
   <Layout>
-    <div class="sender">
-      <h2>发送端配置</h2>
-
+    <div class="page">
+      <!-- 账号列表 -->
       <div class="account-list">
         <div v-for="acc in accounts" :key="acc.id" class="account-card">
-          <div class="account-info">
-            <div class="account-name">
-              余额：
-              <span class="balance" :class="{ 'has-balance': acc.balance > 0 }">
-                {{ acc.balance > 0 ? acc.balance.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '0' }}
+          <div class="account-row">
+            <div class="account-left">
+              <span class="balance-label">余额：</span>
+              <span class="balance-value" :class="{ 'has-money': acc.balance > 0 }">
+                {{ formatBalance(acc.balance) }}
               </span>
-              <span class="account-id">({{ acc.name }})</span>
             </div>
+            <span class="account-name">({{ acc.name }})</span>
           </div>
           <div class="account-status">
-            <span :class="['status-dot', acc.isCopying ? 'copying' : '']"></span>
-            <span class="status-text">{{ acc.isCopying ? '正在跟单' : '未跟单' }}</span>
+            <span :class="['dot', acc.isCopying ? 'dot-on' : '']"></span>
+            <span class="status-text" :class="acc.isCopying ? 'text-on' : ''">
+              {{ acc.isCopying ? '正在跟单' : '未跟单' }}
+            </span>
           </div>
-          <div class="account-actions">
-            <button
-              class="btn-toggle"
-              :class="acc.isCopying ? 'btn-on' : 'btn-off'"
-              @click="toggleCopy(acc.id)"
-            >
-              {{ acc.isCopying ? '停止' : '跟单' }}
-            </button>
+          <div class="account-action">
             <button class="btn-delete" @click="deleteAccount(acc.id)">删除</button>
           </div>
         </div>
@@ -88,130 +74,111 @@ function deleteAccount(id: string) {
       <div v-if="showAddForm" class="add-form">
         <input
           v-model="newAccountName"
-          placeholder="输入账号名称"
+          placeholder="输入账号名称，如 v4live_xxx"
           @keyup.enter="addAccount"
         />
-        <div class="add-form-actions">
-          <button class="btn-confirm" @click="addAccount">确认</button>
-          <button class="btn-cancel" @click="showAddForm = false">取消</button>
+        <div class="form-actions">
+          <button class="btn-add-confirm" @click="addAccount">添加</button>
+          <button class="btn-add-cancel" @click="showAddForm = false">取消</button>
         </div>
       </div>
 
-      <!-- 添加按钮 -->
-      <button v-if="!showAddForm" class="add-btn" @click="showAddForm = true">+</button>
+      <!-- 红色圆形添加按钮 -->
+      <button v-if="!showAddForm" class="fab" @click="showAddForm = true">+</button>
     </div>
   </Layout>
 </template>
 
 <style scoped>
-.sender {
-  max-width: 500px;
+.page {
+  max-width: 480px;
   margin: 0 auto;
-}
-
-.sender h2 {
-  font-size: 1.1rem;
-  color: #fff;
-  margin-bottom: 16px;
-  text-align: center;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #2a3f5f;
 }
 
 .account-list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 8px;
 }
 
 .account-card {
   background: #16213e;
-  padding: 14px 16px;
   border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  padding: 14px 16px;
   border: 1px solid #2a3f5f;
 }
 
-.account-info {
+.account-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
+  margin-bottom: 8px;
 }
 
-.account-name {
-  color: #ccc;
-  font-size: 0.9rem;
+.account-left {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
 }
 
-.balance {
-  font-weight: 600;
+.balance-label {
+  color: #8899aa;
+  font-size: 0.85rem;
+}
+
+.balance-value {
   color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
-.balance.has-balance {
+.balance-value.has-money {
   color: #f39c12;
 }
 
-.account-id {
+.account-name {
   color: #556677;
   font-size: 0.8rem;
-  margin-left: 6px;
 }
 
 .account-status {
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-bottom: 10px;
 }
 
-.status-dot {
+.dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #556677;
+  background: #444;
 }
 
-.status-dot.copying {
+.dot-on {
   background: #4caf50;
-  box-shadow: 0 0 6px rgba(76, 175, 80, 0.5);
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
 }
 
 .status-text {
   font-size: 0.8rem;
-  color: #8899aa;
+  color: #667788;
 }
 
-.account-actions {
+.text-on {
+  color: #4caf50;
+}
+
+.account-action {
   display: flex;
-  gap: 8px;
   justify-content: flex-end;
 }
 
-.btn-toggle {
-  padding: 4px 14px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.8rem;
-}
-
-.btn-on {
-  background: #e74c3c;
-  color: #fff;
-}
-
-.btn-off {
-  background: #4caf50;
-  color: #fff;
-}
-
 .btn-delete {
-  padding: 4px 14px;
-  border: 1px solid #556677;
+  padding: 4px 16px;
   background: transparent;
-  color: #8899aa;
+  border: 1px solid #556677;
+  color: #aaa;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.8rem;
@@ -224,8 +191,8 @@ function deleteAccount(id: string) {
 
 .add-form {
   background: #16213e;
-  padding: 16px;
   border-radius: 8px;
+  padding: 16px;
   margin-top: 12px;
   border: 1px solid #2a3f5f;
 }
@@ -238,8 +205,8 @@ function deleteAccount(id: string) {
   border-radius: 6px;
   color: #fff;
   font-size: 0.95rem;
-  margin-bottom: 10px;
   box-sizing: border-box;
+  margin-bottom: 10px;
 }
 
 .add-form input::placeholder {
@@ -251,22 +218,23 @@ function deleteAccount(id: string) {
   border-color: #4caf50;
 }
 
-.add-form-actions {
+.form-actions {
   display: flex;
   gap: 8px;
 }
 
-.btn-confirm {
+.btn-add-confirm {
   flex: 1;
   padding: 8px;
-  background: #4caf50;
+  background: #55b895;
   color: #fff;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  font-size: 0.9rem;
 }
 
-.btn-cancel {
+.btn-add-cancel {
   flex: 1;
   padding: 8px;
   background: transparent;
@@ -274,25 +242,26 @@ function deleteAccount(id: string) {
   border: 1px solid #2a3f5f;
   border-radius: 6px;
   cursor: pointer;
+  font-size: 0.9rem;
 }
 
-.add-btn {
-  display: block;
-  width: 50px;
-  height: 50px;
-  margin: 20px auto 0;
+.fab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin: 24px auto 0;
   background: #e74c3c;
   color: #fff;
   border: none;
   border-radius: 50%;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
 }
 
-.add-btn:hover {
+.fab:hover {
   background: #c0392b;
 }
 </style>
