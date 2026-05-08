@@ -42,6 +42,7 @@ export const useOrdersStore = defineStore('orders', () => {
   }
 
   async function createOrder(data: {
+    order_number: string
     customer_id: string
     deadline?: string
     priority?: 'normal' | 'urgent'
@@ -52,6 +53,7 @@ export const useOrdersStore = defineStore('orders', () => {
     const { data: order, error } = await supabase
       .from('orders')
       .insert({
+        order_number: data.order_number,
         customer_id: data.customer_id,
         deadline: data.deadline,
         priority: data.priority,

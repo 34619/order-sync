@@ -13,6 +13,7 @@ const customersStore = useCustomersStore()
 
 const submitting = ref(false)
 const form = ref({
+  order_number: '',
   customer_id: '',
   deadline_month: '',
   deadline_day: '',
@@ -56,7 +57,7 @@ function removeItem(index: number) {
 }
 
 async function handleSubmit() {
-  if (!form.value.customer_id) return
+  if (!form.value.order_number || !form.value.customer_id) return
   const validItems = items.value.filter(i => i.product_name && i.quantity > 0)
   if (validItems.length === 0) return
 
@@ -71,6 +72,7 @@ async function handleSubmit() {
       : undefined
 
     const order = await ordersStore.createOrder({
+      order_number: form.value.order_number,
       customer_id: form.value.customer_id,
       deadline,
       priority: form.value.priority,
@@ -108,6 +110,11 @@ async function handleSubmit() {
     <div class="card" style="max-width: 800px">
       <form @submit.prevent="handleSubmit">
         <!-- 订单信息 -->
+        <div class="form-group">
+          <label class="form-label">订单单号 *</label>
+          <input v-model="form.order_number" class="form-input" required placeholder="请输入订单单号" />
+        </div>
+
         <div class="form-group">
           <label class="form-label">客户 *</label>
           <select v-model="form.customer_id" class="form-select" required>
