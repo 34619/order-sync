@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Layout from '../components/Layout.vue'
+import ImageUpload from '../components/ImageUpload.vue'
 import { useOrdersStore } from '../stores/orders'
 import { useCustomersStore } from '../stores/customers'
 import type { Department } from '../types'
@@ -27,10 +28,11 @@ interface ItemForm {
   drawing_name: string
   surface_req: string
   dimensions: string
+  image_url: string | null
 }
 
 function createItem(): ItemForm {
-  return { product_name: '', product_spec: '', quantity: 1, material: '', drawing_name: '', surface_req: '', dimensions: '' }
+  return { product_name: '', product_spec: '', quantity: 1, material: '', drawing_name: '', surface_req: '', dimensions: '', image_url: null }
 }
 
 const items = ref<ItemForm[]>([createItem()])
@@ -80,7 +82,8 @@ async function handleSubmit() {
         material: i.material || undefined,
         drawing_name: i.drawing_name || undefined,
         surface_req: i.surface_req || undefined,
-        dimensions: i.dimensions || undefined
+        dimensions: i.dimensions || undefined,
+        image_url: i.image_url || undefined
       }))
     })
 
@@ -193,6 +196,10 @@ async function handleSubmit() {
               <div class="form-group full-width">
                 <label class="form-label">表面要求</label>
                 <input v-model="item.surface_req" class="form-input" placeholder="如：细磨砂、Pantone 621C" />
+              </div>
+              <div class="form-group full-width">
+                <label class="form-label">产品图片</label>
+                <ImageUpload v-model="item.image_url" />
               </div>
             </div>
           </div>

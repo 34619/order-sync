@@ -35,6 +35,7 @@ export interface OrderItem {
   drawing_name: string | null
   surface_req: string | null
   dimensions: string | null
+  image_url: string | null
   created_at: string
 }
 

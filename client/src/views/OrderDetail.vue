@@ -8,6 +8,7 @@ import { useOrdersStore } from '../stores/orders'
 import { useTasksStore } from '../stores/tasks'
 import { useLogsStore } from '../stores/logs'
 import { useAuthStore } from '../stores/auth'
+import { supabase } from '../lib/supabase'
 import { DEPARTMENT_LABELS } from '../types'
 
 const route = useRoute()
@@ -23,6 +24,7 @@ const showDeliveryConfirm = ref(false)
 onMounted(async () => {
   await ordersStore.fetchOrder(orderId)
   await logsStore.fetchLogs(orderId)
+  await loadImageUrls()
 })
 
 const order = computed(() => ordersStore.currentOrder)
@@ -31,6 +33,27 @@ const isOffice = computed(() => auth.profile?.role === 'admin' || auth.profile?.
 async function refresh() {
   await ordersStore.fetchOrder(orderId)
   await logsStore.fetchLogs(orderId)
+  await loadImageUrls()
+}
+
+const imageUrls = ref<Record<string, string>>({})
+
+async function loadImageUrls() {
+  if (!order.value?.items) return
+  for (const item of order.value.items) {
+    if (item.image_url && !imageUrls.value[item.image_url]) {
+      const { data } = await supabase.storage
+        .from('product-images')
+        .createSignedUrl(item.image_url, 60 * 60 * 24 * 365)
+      if (data?.signedUrl) {
+        imageUrls.value[item.image_url] = data.signedUrl
+      }
+    }
+  }
+}
+
+function getImageUrl(path: string) {
+  return imageUrls.value[path] || ''
 }
 
 async function handleStartTask(taskId: string) {
@@ -101,6 +124,7 @@ async function handleConfirmDelivery() {
         <table class="data-table">
           <thead>
             <tr>
+              <th>图片</th>
               <th>产品名称</th>
               <th>规格</th>
               <th>数量</th>
@@ -112,6 +136,10 @@ async function handleConfirmDelivery() {
           </thead>
           <tbody>
             <tr v-for="item in order.items" :key="item.id">
+              <td>
+                <img v-if="item.image_url" :src="getImageUrl(item.image_url)" class="item-image" />
+                <span v-else class="text-secondary text-sm">-</span>
+              </td>
               <td>{{ item.product_name }}</td>
               <td>{{ item.product_spec || '-' }}</td>
               <td>{{ item.quantity }}</td>
@@ -245,5 +273,13 @@ async function handleConfirmDelivery() {
   color: var(--text-muted);
   white-space: nowrap;
   min-width: 140px;
+}
+
+.item-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--border);
 }
 </style>

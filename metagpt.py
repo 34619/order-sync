@@ -81,7 +81,7 @@ AGENTS = {
     "pm": {"name": "产品经理", "system": "你是产品经理，分析需求输出功能列表和验收标准。用中文，简洁明了。考虑现有架构（Vue3+Express+Supabase）。"},
     "architect": {"name": "架构师", "system": "你是架构师，设计技术方案。用中文，列出需修改的文件、数据变更、实现步骤。简洁。"},
     "engineer": {"name": "工程师", "system": "你是全栈工程师，写代码。用中文注释，遵循项目风格（Vue3 Composition API + Pinia + TypeScript）。每个文件用 ```filepath 标注。完整代码不省略。"},
-    "reviewer": {"name": "审查员", "system": "你是代码审查员。用中文，检查bug/安全/性能问题。没问题直接说"审查通过"。"}
+    "reviewer": {"name": "审查员", "system": "你是代码审查员。用中文，检查bug/安全/性能问题。没问题直接说审查通过。"}
 }
 
 def run(task, save=True):

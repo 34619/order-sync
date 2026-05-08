@@ -46,7 +46,7 @@ export const useOrdersStore = defineStore('orders', () => {
     deadline?: string
     priority?: 'normal' | 'urgent'
     notes?: string
-    items: { product_name: string; product_spec?: string; quantity: number; material?: string; drawing_name?: string; surface_req?: string; dimensions?: string }[]
+    items: { product_name: string; product_spec?: string; quantity: number; material?: string; drawing_name?: string; surface_req?: string; dimensions?: string; image_url?: string }[]
   }) {
     const auth = useAuthStore()
     const { data: order, error } = await supabase
@@ -72,7 +72,8 @@ export const useOrdersStore = defineStore('orders', () => {
       material: item.material || null,
       drawing_name: item.drawing_name || null,
       surface_req: item.surface_req || null,
-      dimensions: item.dimensions || null
+      dimensions: item.dimensions || null,
+      image_url: item.image_url || null
     }))
     const { error: itemsError } = await supabase.from('order_items').insert(items)
     if (itemsError) throw new Error('添加产品失败: ' + itemsError.message)
