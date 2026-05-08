@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+const API_URL = import.meta.env.VITE_API_URL || `${SUPABASE_URL}/functions/v1/manage-users`
 
 async function getToken(): Promise<string> {
   const { data } = await supabase.auth.getSession()
