@@ -2,18 +2,41 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { supabase } from '../lib/supabase'
 import type { User } from '@supabase/supabase-js'
+import type { Profile } from '../types'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
+  const profile = ref<Profile | null>(null)
   const loading = ref(false)
   const error = ref('')
+
+  async function fetchProfile() {
+    if (!user.value) {
+      profile.value = null
+      return
+    }
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.value.id)
+      .single()
+    profile.value = data as Profile | null
+  }
 
   async function init() {
     const { data } = await supabase.auth.getUser()
     user.value = data.user
+    if (user.value) {
+      await fetchProfile()
+    }
 
-    supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.onAuthStateChange(async (_event, session) => {
       user.value = session?.user ?? null
+      if (user.value) {
+        await fetchProfile()
+      } else {
+        profile.value = null
+      }
     })
   }
 
@@ -23,28 +46,19 @@ export const useAuthStore = defineStore('auth', () => {
     const { data, error: err } = await supabase.auth.signInWithPassword({ email, password })
     if (err) {
       error.value = err.message
-    } else {
-      user.value = data.user
+      loading.value = false
+      return
     }
-    loading.value = false
-  }
-
-  async function register(email: string, password: string) {
-    loading.value = true
-    error.value = ''
-    const { data, error: err } = await supabase.auth.signUp({ email, password })
-    if (err) {
-      error.value = err.message
-    } else {
-      user.value = data.user
-    }
+    user.value = data.user
+    await fetchProfile()
     loading.value = false
   }
 
   async function logout() {
     await supabase.auth.signOut()
     user.value = null
+    profile.value = null
   }
 
-  return { user, loading, error, init, login, register, logout }
+  return { user, profile, loading, error, init, login, logout, fetchProfile }
 })

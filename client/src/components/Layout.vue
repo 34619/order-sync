@@ -1,13 +1,44 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { ROLE_LABELS } from '../types'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 
+const isAdmin = computed(() => auth.profile?.role === 'admin')
+const isOffice = computed(() => auth.profile?.role === 'office')
+const isDepartment = computed(() => {
+  const r = auth.profile?.role
+  return r === 'cnc_program' || r === 'cnc_machine' || r === 'print_3d' || r === 'workshop'
+})
+
+const roleLabel = computed(() => {
+  const r = auth.profile?.role
+  return r ? ROLE_LABELS[r] : ''
+})
+
+const navItems = computed(() => {
+  const items: { to: string; label: string }[] = []
+  if (isAdmin.value || isOffice.value) {
+    items.push({ to: '/dashboard', label: '数据看板' })
+    items.push({ to: '/orders', label: '订单管理' })
+    items.push({ to: '/customers', label: '客户管理' })
+    items.push({ to: '/logs', label: '跟单日志' })
+  }
+  if (isDepartment.value) {
+    items.push({ to: '/tasks', label: '我的任务' })
+  }
+  if (isAdmin.value) {
+    items.push({ to: '/users', label: '用户管理' })
+  }
+  return items
+})
+
 function isActive(path: string) {
-  return route.path === path
+  return route.path === path || route.path.startsWith(path + '/')
 }
 
 function handleLogout() {
@@ -17,100 +48,115 @@ function handleLogout() {
 </script>
 
 <template>
-  <div class="app-layout">
-    <header class="app-header">
-      <span class="header-title">OrderSync</span>
-      <button class="logout-btn" @click="handleLogout">退出</button>
-    </header>
-    <main class="app-main">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-header">跟单系统</div>
+      <nav class="sidebar-nav">
+        <router-link
+          v-for="item in navItems"
+          :key="item.to"
+          :to="item.to"
+          :class="{ active: isActive(item.to) }"
+        >
+          {{ item.label }}
+        </router-link>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="user-info">{{ auth.profile?.username }} ({{ roleLabel }})</span>
+        <button class="btn-logout" @click="handleLogout">退出</button>
+      </div>
+    </aside>
+    <main class="main-content">
       <slot />
     </main>
-    <nav class="app-tabs">
-      <router-link to="/sender" :class="{ active: isActive('/sender') }">
-        发送端配置
-      </router-link>
-      <router-link to="/receiver" :class="{ active: isActive('/receiver') }">
-        接收端配置
-      </router-link>
-      <router-link to="/" :class="{ active: isActive('/') }">
-        接收端 6/6
-      </router-link>
-    </nav>
   </div>
 </template>
 
 <style scoped>
-.app-layout {
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  background: #1a1a2e;
-}
-
-.app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 16px;
-  background: #16213e;
-  border-bottom: 1px solid #2a3f5f;
-}
-
-.header-title {
-  font-size: 0.85rem;
-  color: #8899aa;
-}
-
-.logout-btn {
-  background: none;
-  border: 1px solid #556677;
-  color: #8899aa;
-  padding: 3px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.75rem;
-}
-
-.logout-btn:hover {
-  border-color: #e74c3c;
-  color: #e74c3c;
-}
-
-.app-main {
-  flex: 1;
-  padding: 20px 16px;
-  padding-bottom: 72px;
-  overflow-y: auto;
-}
-
-.app-tabs {
   position: fixed;
-  bottom: 0;
+  top: 0;
   left: 0;
-  right: 0;
-  display: flex;
-  background: #223355;
-  border-top: 1px solid #2a3f5f;
+  bottom: 0;
   z-index: 100;
 }
 
-.app-tabs a {
+.sidebar-header {
+  padding: 16px 20px;
+  font-size: 18px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-nav {
   flex: 1;
-  text-align: center;
-  padding: 14px 0;
-  color: #8899aa;
-  font-size: 0.85rem;
-  text-decoration: none;
+  padding: 8px 0;
+  overflow-y: auto;
+}
+
+.sidebar-nav a {
+  display: block;
+  padding: 10px 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
   transition: all 0.2s;
-  border-bottom: 2px solid transparent;
+  border-left: 3px solid transparent;
 }
 
-.app-tabs a.active {
-  color: #fff;
-  border-bottom-color: #4caf50;
+.sidebar-nav a:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
 }
 
-.app-tabs a:hover {
-  color: #ccc;
+.sidebar-nav a.active {
+  color: var(--text-primary);
+  background: var(--accent-bg);
+  border-left-color: var(--accent);
+}
+
+.sidebar-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-info {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.btn-logout {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.btn-logout:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  padding: 24px;
+  min-height: 100vh;
 }
 </style>
