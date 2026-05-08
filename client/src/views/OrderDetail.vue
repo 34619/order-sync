@@ -209,7 +209,7 @@ async function handleConfirmDelivery() {
 
     <!-- 图片预览 -->
     <div v-if="previewImage" class="image-preview-overlay" @click="previewImage = ''">
-      <img :src="previewImage" class="preview-large" @click.stop />
+      <img :src="previewImage" class="preview-large" />
     </div>
   </Layout>
 </template>
