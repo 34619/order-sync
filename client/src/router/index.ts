@@ -21,15 +21,15 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/orders',
-      name: 'Orders',
-      component: () => import('../views/Orders.vue'),
+      path: '/receiver',
+      name: 'Receiver',
+      component: () => import('../views/Receiver.vue'),
       meta: { requiresAuth: true }
     },
     {
-      path: '/strategies',
-      name: 'Strategies',
-      component: () => import('../views/Strategies.vue'),
+      path: '/sender',
+      name: 'Sender',
+      component: () => import('../views/Sender.vue'),
       meta: { requiresAuth: true }
     }
   ]

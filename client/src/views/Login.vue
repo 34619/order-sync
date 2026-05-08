@@ -20,7 +20,7 @@ async function handleLogin() {
   <div class="auth-page">
     <div class="auth-card">
       <h1>OrderSync</h1>
-      <h2>登录</h2>
+      <p class="subtitle">跟单交易系统</p>
       <form @submit.prevent="handleLogin">
         <div class="form-group">
           <label>邮箱</label>
@@ -46,68 +46,76 @@ async function handleLogin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: #1a1a2e;
 }
 
 .auth-card {
-  background: #fff;
+  background: #16213e;
   padding: 40px;
   border-radius: 12px;
-  width: 400px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  width: 380px;
+  border: 1px solid #2a3f5f;
 }
 
 .auth-card h1 {
   text-align: center;
-  color: #4fc3f7;
-  margin-bottom: 5px;
+  color: #4caf50;
+  margin-bottom: 4px;
+  font-size: 1.8rem;
 }
 
-.auth-card h2 {
+.subtitle {
   text-align: center;
-  color: #333;
+  color: #667788;
   margin-bottom: 30px;
-  font-weight: 400;
+  font-size: 0.9rem;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .form-group label {
   display: block;
   margin-bottom: 6px;
-  color: #555;
+  color: #8899aa;
   font-size: 0.9rem;
 }
 
 .form-group input {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #ddd;
+  background: #0f1729;
+  border: 1px solid #2a3f5f;
   border-radius: 6px;
   font-size: 1rem;
+  color: #fff;
   box-sizing: border-box;
+}
+
+.form-group input::placeholder {
+  color: #556677;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #4fc3f7;
+  border-color: #4caf50;
 }
 
 button[type="submit"] {
   width: 100%;
   padding: 12px;
-  background: #4fc3f7;
+  background: #4caf50;
   color: #fff;
   border: none;
   border-radius: 6px;
   font-size: 1rem;
   cursor: pointer;
+  margin-top: 8px;
 }
 
 button[type="submit"]:hover {
-  background: #29b6f6;
+  background: #45a049;
 }
 
 button[disabled] {
@@ -118,16 +126,17 @@ button[disabled] {
 .error {
   color: #e74c3c;
   font-size: 0.85rem;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .link {
   text-align: center;
   margin-top: 20px;
-  color: #888;
+  color: #667788;
+  font-size: 0.9rem;
 }
 
 .link a {
-  color: #4fc3f7;
+  color: #4caf50;
 }
 </style>

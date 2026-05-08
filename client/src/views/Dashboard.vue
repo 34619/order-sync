@@ -20,130 +20,208 @@ const activeStrategies = computed(() => strategiesStore.strategies.filter(s => s
 
 <template>
   <Layout>
-    <h1>仪表盘</h1>
-    <div class="stats">
-      <div class="stat-card">
-        <div class="stat-value">{{ totalOrders }}</div>
-        <div class="stat-label">总订单数</div>
+    <div class="dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">{{ totalOrders }}</div>
+          <div class="stat-label">总订单数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value orange">{{ pendingOrders }}</div>
+          <div class="stat-label">待处理</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value green">{{ filledOrders }}</div>
+          <div class="stat-label">已完成</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value green">{{ activeStrategies }}</div>
+          <div class="stat-label">启用策略</div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-value">{{ pendingOrders }}</div>
-        <div class="stat-label">待处理订单</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">{{ filledOrders }}</div>
-        <div class="stat-label">已完成订单</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">{{ activeStrategies }}</div>
-        <div class="stat-label">启用策略</div>
-      </div>
-    </div>
 
-    <div class="recent">
-      <h2>最近订单</h2>
-      <table v-if="ordersStore.orders.length">
-        <thead>
-          <tr>
-            <th>交易对</th>
-            <th>方向</th>
-            <th>数量</th>
-            <th>价格</th>
-            <th>状态</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="order in ordersStore.orders.slice(0, 5)" :key="order.id">
-            <td>{{ order.symbol }}</td>
-            <td :class="order.side">{{ order.side === 'buy' ? '买入' : '卖出' }}</td>
-            <td>{{ order.quantity }}</td>
-            <td>{{ order.price }}</td>
-            <td>
-              <span :class="'status-' + order.status">
+      <div class="section">
+        <h2>最近订单</h2>
+        <div v-if="ordersStore.orders.length" class="order-list">
+          <div v-for="order in ordersStore.orders.slice(0, 5)" :key="order.id" class="order-item">
+            <div class="order-info">
+              <span class="symbol">{{ order.symbol }}</span>
+              <span :class="['side', order.side]">{{ order.side === 'buy' ? '买' : '卖' }}</span>
+            </div>
+            <div class="order-detail">
+              <span>{{ order.quantity }} @ {{ order.price }}</span>
+              <span :class="'status status-' + order.status">
                 {{ order.status === 'pending' ? '待处理' : order.status === 'filled' ? '已完成' : '已取消' }}
               </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <p v-else class="empty">暂无订单数据</p>
+            </div>
+          </div>
+        </div>
+        <p v-else class="empty">暂无订单数据</p>
+      </div>
+
+      <div class="section">
+        <h2>跟单策略</h2>
+        <div v-if="strategiesStore.strategies.length" class="strategy-list">
+          <div v-for="s in strategiesStore.strategies" :key="s.id" class="strategy-item">
+            <div class="strategy-name">{{ s.name }}</div>
+            <div class="strategy-info">
+              <span>{{ s.source_account }}</span>
+              <span :class="['badge', s.is_active ? 'active' : 'disabled']">
+                {{ s.is_active ? '运行中' : '已暂停' }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <p v-else class="empty">暂无策略</p>
+      </div>
     </div>
   </Layout>
 </template>
 
 <style scoped>
-h1 {
-  margin: 0 0 24px;
-  color: #333;
+.dashboard {
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.stats {
+.stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .stat-card {
-  background: #fff;
-  padding: 24px;
+  background: #16213e;
+  padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   text-align: center;
+  border: 1px solid #2a3f5f;
 }
 
 .stat-value {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  color: #4fc3f7;
+  color: #ffffff;
 }
+
+.stat-value.green { color: #4caf50; }
+.stat-value.orange { color: #f39c12; }
 
 .stat-label {
-  color: #888;
-  margin-top: 6px;
-  font-size: 0.9rem;
-}
-
-.recent {
-  background: #fff;
-  padding: 24px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.recent h2 {
-  margin: 0 0 16px;
-  font-size: 1.1rem;
-  color: #333;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th, td {
-  padding: 10px 12px;
-  text-align: left;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-th {
-  color: #888;
-  font-weight: 500;
+  color: #667788;
+  margin-top: 4px;
   font-size: 0.85rem;
 }
 
-.buy { color: #27ae60; }
-.sell { color: #e74c3c; }
+.section {
+  background: #16213e;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #2a3f5f;
+}
+
+.section h2 {
+  font-size: 0.95rem;
+  color: #8899aa;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #2a3f5f;
+}
+
+.order-item:last-child {
+  border-bottom: none;
+}
+
+.order-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.symbol {
+  font-weight: 600;
+}
+
+.side {
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.side.buy {
+  background: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+}
+
+.side.sell {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
+.order-detail {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #8899aa;
+  font-size: 0.85rem;
+}
 
 .status-pending { color: #f39c12; }
-.status-filled { color: #27ae60; }
-.status-cancelled { color: #95a5a6; }
+.status-filled { color: #4caf50; }
+.status-cancelled { color: #667788; }
+
+.strategy-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #2a3f5f;
+}
+
+.strategy-item:last-child {
+  border-bottom: none;
+}
+
+.strategy-name {
+  font-weight: 600;
+}
+
+.strategy-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #8899aa;
+  font-size: 0.85rem;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.badge.active {
+  background: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+}
+
+.badge.disabled {
+  background: rgba(102, 119, 136, 0.15);
+  color: #667788;
+}
 
 .empty {
   text-align: center;
-  color: #aaa;
-  padding: 30px;
+  color: #556677;
+  padding: 20px;
 }
 </style>
