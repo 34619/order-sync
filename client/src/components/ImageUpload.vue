@@ -19,13 +19,11 @@ async function handleFileChange(e: Event) {
   const file = input.files?.[0]
   if (!file) return
 
-  // 验证类型
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
     error.value = '仅支持 JPG/PNG/WebP 格式'
     return
   }
 
-  // 验证大小
   if (file.size > 2 * 1024 * 1024) {
     error.value = '文件大小不能超过 2MB'
     return
@@ -39,27 +37,30 @@ async function handleFileChange(e: Event) {
     const fileName = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
     const filePath = `products/${fileName}`
 
-    const { error: uploadError } = await supabase.storage
+    console.log('开始上传:', filePath, '大小:', file.size)
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
       .from('product-images')
       .upload(filePath, file)
 
-    if (uploadError) throw uploadError
+    console.log('上传结果:', { data: uploadData, error: uploadError })
 
-    // 获取签名 URL（有效期 1 年）
-    const { data } = await supabase.storage
-      .from('product-images')
-      .createSignedUrl(filePath, 60 * 60 * 24 * 365)
-
-    if (data?.signedUrl) {
-      previewUrl.value = data.signedUrl
-      emit('update:modelValue', filePath)
+    if (uploadError) {
+      error.value = '上传失败: ' + uploadError.message
+      return
     }
-  } catch (e: any) {
-    error.value = e.message || '上传失败'
-  }
 
-  uploading.value = false
-  input.value = ''
+    // 直接用文件路径存储，详情页再生成签名 URL
+    previewUrl.value = URL.createObjectURL(file)
+    emit('update:modelValue', filePath)
+    console.log('上传成功:', filePath)
+  } catch (e: any) {
+    console.error('上传异常:', e)
+    error.value = e.message || '上传失败'
+  } finally {
+    uploading.value = false
+    input.value = ''
+  }
 }
 
 async function removeImage() {
