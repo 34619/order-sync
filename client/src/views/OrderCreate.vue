@@ -40,8 +40,7 @@ const items = ref<ItemForm[]>([createItem()])
 
 const departments = ref<{ key: Department; label: string; checked: boolean }[]>([
   { key: 'cnc_program', label: 'CNC', checked: false },
-  { key: 'print_3d', label: '3D打印', checked: false },
-  { key: 'workshop', label: '车间加工', checked: false }
+  { key: 'print_3d', label: '3D打印', checked: false }
 ])
 
 onMounted(() => {
