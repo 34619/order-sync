@@ -20,6 +20,7 @@ const auth = useAuthStore()
 
 const orderId = route.params.id as string
 const showDeliveryConfirm = ref(false)
+const previewImage = ref('')
 
 onMounted(async () => {
   await ordersStore.fetchOrder(orderId)
@@ -137,7 +138,7 @@ async function handleConfirmDelivery() {
           <tbody>
             <tr v-for="item in order.items" :key="item.id">
               <td>
-                <img v-if="item.image_url" :src="getImageUrl(item.image_url)" class="item-image" />
+                <img v-if="item.image_url" :src="getImageUrl(item.image_url)" class="item-image" @click="previewImage = getImageUrl(item.image_url)" />
                 <span v-else class="text-secondary text-sm">-</span>
               </td>
               <td>{{ item.product_name }}</td>
@@ -205,6 +206,11 @@ async function handleConfirmDelivery() {
       @confirm="handleConfirmDelivery"
       @cancel="showDeliveryConfirm = false"
     />
+
+    <!-- 图片预览 -->
+    <div v-if="previewImage" class="image-preview-overlay" @click="previewImage = ''">
+      <img :src="previewImage" class="preview-large" @click.stop />
+    </div>
   </Layout>
 </template>
 
@@ -281,5 +287,27 @@ async function handleConfirmDelivery() {
   object-fit: cover;
   border-radius: 4px;
   border: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.item-image:hover {
+  opacity: 0.8;
+}
+
+.image-preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  cursor: pointer;
+}
+
+.preview-large {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 8px;
 }
 </style>
