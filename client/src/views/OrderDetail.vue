@@ -8,7 +8,7 @@ import { useOrdersStore } from '../stores/orders'
 import { useTasksStore } from '../stores/tasks'
 import { useLogsStore } from '../stores/logs'
 import { useAuthStore } from '../stores/auth'
-import { DEPARTMENT_LABELS, STATUS_LABELS, TASK_STATUS_LABELS } from '../types'
+import { DEPARTMENT_LABELS } from '../types'
 
 const route = useRoute()
 const router = useRouter()

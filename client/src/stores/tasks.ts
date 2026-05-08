@@ -9,9 +9,9 @@ interface TaskWithOrder extends OrderTask {
   order?: {
     id: string
     order_number: string | null
-    product_name: string
     deadline: string | null
     priority: string
+    items?: { product_name: string }[]
     customer?: { name: string } | null
   }
 }

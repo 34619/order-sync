@@ -6,7 +6,6 @@ import StatusBadge from '../components/StatusBadge.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { useOrdersStore } from '../stores/orders'
 import { STATUS_LABELS } from '../types'
-import type { OrderStatus } from '../types'
 
 const router = useRouter()
 const ordersStore = useOrdersStore()

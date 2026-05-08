@@ -3,13 +3,10 @@ import { ref, computed, onMounted } from 'vue'
 import Layout from '../components/Layout.vue'
 import StatusBadge from '../components/StatusBadge.vue'
 import { useOrdersStore } from '../stores/orders'
-import { STATUS_LABELS } from '../types'
-import type { OrderStatus } from '../types'
 
 const ordersStore = useOrdersStore()
 
 const loading = ref(true)
-const taskCounts = ref<Record<string, Record<string, number>>>({})
 
 onMounted(async () => {
   await ordersStore.fetchOrders()

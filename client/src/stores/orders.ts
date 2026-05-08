@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from './auth'
 import { DEPARTMENT_LABELS } from '../types'
-import type { Order, Department, OrderItem } from '../types'
+import type { Order, Department } from '../types'
 
 export const useOrdersStore = defineStore('orders', () => {
   const orders = ref<Order[]>([])
