@@ -49,7 +49,11 @@ async function handleFilter() {
 }
 
 async function handleStart(taskId: string) {
-  await tasksStore.startTask(taskId)
+  try {
+    await tasksStore.startTask(taskId)
+  } catch (e: any) {
+    alert('操作失败: ' + (e.message || '未知错误'))
+  }
 }
 
 function openComplete(taskId: string) {
@@ -58,8 +62,12 @@ function openComplete(taskId: string) {
 }
 
 async function handleComplete() {
-  await tasksStore.completeTask(showNotes.value, notesText.value || undefined)
-  showNotes.value = ''
+  try {
+    await tasksStore.completeTask(showNotes.value, notesText.value || undefined)
+    showNotes.value = ''
+  } catch (e: any) {
+    alert('操作失败: ' + (e.message || '未知错误'))
+  }
 }
 
 const roleLabel = auth.profile?.role ? ROLE_LABELS[auth.profile.role] : ''
