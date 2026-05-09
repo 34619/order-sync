@@ -92,50 +92,7 @@ export const useTasksStore = defineStore('tasks', () => {
   }
 
   async function completeTask(taskId: string, notes?: string) {
-    const auth = useAuthStore()
-
-    // 获取当前任务信息
-    const { data: currentTask } = await supabase
-      .from('order_tasks')
-      .select('order_id, department')
-      .eq('id', taskId)
-      .single()
-
     await updateTaskStatus(taskId, 'completed', notes)
-
-    // 检查是否需要自动创建车间任务
-    if (currentTask && ['cnc_machine', 'print_3d'].includes(currentTask.department)) {
-      // 查询该订单所有加工类任务
-      const { data: allTasks } = await supabase
-        .from('order_tasks')
-        .select('department, status')
-        .eq('order_id', currentTask.order_id)
-        .in('department', ['cnc_machine', 'print_3d'])
-
-      // 查询是否已有车间任务
-      const { data: existingWorkshop } = await supabase
-        .from('order_tasks')
-        .select('id')
-        .eq('order_id', currentTask.order_id)
-        .eq('department', 'workshop')
-
-      // 所有加工任务完成 + 还没有车间任务 → 自动创建
-      const allDone = allTasks?.every(t => t.status === 'completed')
-      if (allDone && (!existingWorkshop || existingWorkshop.length === 0)) {
-        await supabase.from('order_tasks').insert({
-          order_id: currentTask.order_id,
-          department: 'workshop'
-        })
-        try {
-          await supabase.from('operation_logs').insert({
-            order_id: currentTask.order_id,
-            user_id: auth.user!.id,
-            action: '加工完成，自动下发车间任务'
-          })
-        } catch { /* 忽略日志错误 */ }
-      }
-    }
-
     await fetchMyTasks()
   }
 
