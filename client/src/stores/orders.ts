@@ -21,7 +21,6 @@ export const useOrdersStore = defineStore('orders', () => {
       query = query.eq('status', filters.status)
     }
     if (filters?.keyword) {
-      // Search by order_number only since product is now in order_items
       query = query.ilike('order_number', `%${filters.keyword}%`)
     }
 

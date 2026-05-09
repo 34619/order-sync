@@ -54,7 +54,7 @@ async function handleDelete() {
           v-model="keyword"
           class="form-input"
           style="width: 240px"
-          placeholder="搜索订单号/产品名称"
+          placeholder="搜索订单号"
           @keyup.enter="handleSearch"
         />
         <select v-model="statusFilter" class="form-select" style="width: 160px" @change="handleSearch">

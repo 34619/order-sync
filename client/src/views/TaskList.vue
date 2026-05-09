@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Layout from '../components/Layout.vue'
 import StatusBadge from '../components/StatusBadge.vue'
@@ -13,6 +13,7 @@ const auth = useAuthStore()
 const router = useRouter()
 
 const statusFilter = ref('')
+const searchKeyword = ref('')
 const showNotes = ref('')
 const notesText = ref('')
 
@@ -71,6 +72,14 @@ async function handleComplete() {
 }
 
 const roleLabel = auth.profile?.role ? ROLE_LABELS[auth.profile.role] : ''
+
+const filteredTasks = computed(() => {
+  if (!searchKeyword.value) return tasksStore.tasks
+  const kw = searchKeyword.value.toLowerCase()
+  return tasksStore.tasks.filter(t =>
+    t.order?.order_number?.toLowerCase().includes(kw)
+  )
+})
 </script>
 
 <template>
@@ -82,6 +91,7 @@ const roleLabel = auth.profile?.role ? ROLE_LABELS[auth.profile.role] : ''
 
     <div class="card mb-16">
       <div class="filter-bar">
+        <input v-model="searchKeyword" class="form-input" style="width: 200px" placeholder="搜索订单号" />
         <select v-model="statusFilter" class="form-select" style="width: 140px" @change="handleFilter">
           <option value="">全部状态</option>
           <option value="pending">待处理</option>
@@ -91,8 +101,8 @@ const roleLabel = auth.profile?.role ? ROLE_LABELS[auth.profile.role] : ''
       </div>
     </div>
 
-    <div v-if="tasksStore.tasks.length" class="task-grid">
-      <div v-for="task in tasksStore.tasks" :key="task.id" class="card task-card">
+    <div v-if="filteredTasks.length" class="task-grid">
+      <div v-for="task in filteredTasks" :key="task.id" class="card task-card">
         <div class="flex justify-between items-center mb-16">
           <span class="task-order-num">{{ task.order?.order_number || '未知单号' }}</span>
           <StatusBadge :status="task.status" type="task" />
