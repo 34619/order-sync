@@ -13,6 +13,7 @@ const emit = defineEmits<{
 const uploading = ref(false)
 const error = ref('')
 const previewUrl = ref<string | null>(props.modelValue)
+const filePath = ref<string | null>(null)
 
 async function handleFileChange(e: Event) {
   const input = e.target as HTMLInputElement
@@ -30,46 +31,40 @@ async function handleFileChange(e: Event) {
   }
 
   error.value = ''
+
+  // 立即显示预览
+  previewUrl.value = URL.createObjectURL(file)
+  const ext = file.name.split('.').pop()
+  const fileName = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
+  const path = `products/${fileName}`
+  filePath.value = path
+
+  // 立即通知父组件（不等上传完成）
+  emit('update:modelValue', path)
+
+  // 后台上传
   uploading.value = true
+  const { error: uploadError } = await supabase.storage
+    .from('product-images')
+    .upload(path, file)
+  uploading.value = false
 
-  try {
-    const ext = file.name.split('.').pop()
-    const fileName = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
-    const filePath = `products/${fileName}`
-
-    console.log('开始上传:', filePath, '大小:', file.size)
-
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('product-images')
-      .upload(filePath, file)
-
-    console.log('上传结果:', { data: uploadData, error: uploadError })
-
-    if (uploadError) {
-      error.value = '上传失败: ' + uploadError.message
-      alert('图片上传失败: ' + uploadError.message)
-      return
-    }
-
-    // 直接用文件路径存储，详情页再生成签名 URL
-    previewUrl.value = URL.createObjectURL(file)
-    emit('update:modelValue', filePath)
-    console.log('上传成功:', filePath)
-  } catch (e: any) {
-    console.error('上传异常:', e)
-    error.value = e.message || '上传失败'
-    alert('图片上传异常: ' + (e.message || '未知错误'))
-  } finally {
-    uploading.value = false
-    input.value = ''
+  if (uploadError) {
+    error.value = '上传失败: ' + uploadError.message
+    previewUrl.value = null
+    filePath.value = null
+    emit('update:modelValue', null)
   }
+
+  input.value = ''
 }
 
 async function removeImage() {
-  if (props.modelValue) {
-    await supabase.storage.from('product-images').remove([props.modelValue])
+  if (filePath.value) {
+    await supabase.storage.from('product-images').remove([filePath.value])
   }
   previewUrl.value = null
+  filePath.value = null
   emit('update:modelValue', null)
 }
 </script>
@@ -78,13 +73,13 @@ async function removeImage() {
   <div class="image-upload">
     <div v-if="previewUrl" class="preview">
       <img :src="previewUrl" alt="产品图片" />
-      <button type="button" class="btn btn-sm btn-danger" @click="removeImage">删除</button>
+      <span v-if="uploading" class="upload-status">上传中...</span>
+      <button v-else type="button" class="btn btn-sm btn-danger" @click="removeImage">删除</button>
     </div>
     <div v-else class="upload-area">
       <label class="upload-label">
         <input type="file" accept="image/jpeg,image/png,image/webp" @change="handleFileChange" hidden />
-        <span v-if="uploading" class="text-secondary">上传中...</span>
-        <span v-else class="text-secondary">+ 上传图片</span>
+        <span class="text-secondary">+ 上传图片</span>
       </label>
     </div>
     <p v-if="error" class="upload-error">{{ error }}</p>
@@ -129,6 +124,11 @@ async function removeImage() {
   object-fit: cover;
   border-radius: 6px;
   border: 1px solid var(--border);
+}
+
+.upload-status {
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 .upload-error {
