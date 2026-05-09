@@ -1,20 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Layout from '../components/Layout.vue'
 import ImageUpload from '../components/ImageUpload.vue'
 import { useOrdersStore } from '../stores/orders'
-import { useCustomersStore } from '../stores/customers'
 import type { Department } from '../types'
 
 const router = useRouter()
 const ordersStore = useOrdersStore()
-const customersStore = useCustomersStore()
 
 const submitting = ref(false)
 const form = ref({
   order_number: '',
-  customer_id: '',
   deadline_month: '',
   deadline_day: '',
   priority: 'normal' as 'normal' | 'urgent',
@@ -43,10 +40,6 @@ const departments = ref<{ key: Department; label: string; checked: boolean }[]>(
   { key: 'print_3d', label: '3D打印', checked: false }
 ])
 
-onMounted(() => {
-  customersStore.fetchCustomers()
-})
-
 function addItem() {
   items.value.push(createItem())
 }
@@ -57,7 +50,6 @@ function removeItem(index: number) {
 
 async function handleSubmit() {
   if (!form.value.order_number) { alert('请填写订单单号'); return }
-  if (!form.value.customer_id) { alert('请选择客户'); return }
   const validItems = items.value.filter(i => i.product_name && i.quantity > 0)
   if (validItems.length === 0) { alert('请至少填写一个产品名称和数量'); return }
 
@@ -73,7 +65,6 @@ async function handleSubmit() {
 
     const order = await ordersStore.createOrder({
       order_number: form.value.order_number,
-      customer_id: form.value.customer_id,
       deadline,
       priority: form.value.priority,
       notes: form.value.notes || undefined,
@@ -113,14 +104,6 @@ async function handleSubmit() {
         <div class="form-group">
           <label class="form-label">订单单号 *</label>
           <input v-model="form.order_number" class="form-input" required placeholder="请输入订单单号" />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">客户 *</label>
-          <select v-model="form.customer_id" class="form-select" required>
-            <option value="">请选择客户</option>
-            <option v-for="c in customersStore.customers" :key="c.id" :value="c.id">{{ c.name }}</option>
-          </select>
         </div>
 
         <div class="form-group">

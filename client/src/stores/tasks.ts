@@ -46,7 +46,7 @@ export const useTasksStore = defineStore('tasks', () => {
 
     let query = supabase
       .from('order_tasks')
-      .select('*, order:orders(id, order_number, deadline, priority, items:order_items(product_name), customer:customers(name))')
+      .select('*, order:orders(id, order_number, deadline, priority, items:order_items(product_name))')
       .eq('department', role)
       .order('created_at', { ascending: false })
 

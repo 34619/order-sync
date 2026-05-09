@@ -39,12 +39,6 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['admin', 'office', 'cnc_program', 'cnc_machine', 'print_3d', 'workshop'] as Role[] }
     },
     {
-      path: '/customers',
-      name: 'CustomerList',
-      component: () => import('../views/CustomerList.vue'),
-      meta: { requiresAuth: true, roles: ['admin', 'office'] as Role[] }
-    },
-    {
       path: '/tasks',
       name: 'TaskList',
       component: () => import('../views/TaskList.vue'),

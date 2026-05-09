@@ -70,7 +70,6 @@ async function handleDelete() {
         <thead>
           <tr>
             <th>订单号</th>
-            <th>客户</th>
             <th>产品</th>
             <th>交期</th>
             <th>优先级</th>
@@ -82,7 +81,6 @@ async function handleDelete() {
         <tbody>
           <tr v-for="order in ordersStore.orders" :key="order.id" @click="goDetail(order.id)">
             <td>{{ order.order_number }}</td>
-            <td>{{ order.customer?.name || '-' }}</td>
             <td>{{ order.items?.map(i => i.product_name).join('、') || '-' }}</td>
             <td>{{ order.deadline || '-' }}</td>
             <td>

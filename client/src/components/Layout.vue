@@ -25,7 +25,6 @@ const navItems = computed(() => {
   if (isAdmin.value || isOffice.value) {
     items.push({ to: '/dashboard', label: '数据看板' })
     items.push({ to: '/orders', label: '订单管理' })
-    items.push({ to: '/customers', label: '客户管理' })
     items.push({ to: '/logs', label: '跟单日志' })
   }
   if (isDepartment.value) {

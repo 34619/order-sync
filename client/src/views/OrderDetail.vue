@@ -91,10 +91,6 @@ async function handleConfirmDelivery() {
             <span class="info-value">{{ order.order_number }}</span>
           </div>
           <div class="info-item">
-            <span class="info-label">客户</span>
-            <span class="info-value">{{ order.customer?.name || '-' }}</span>
-          </div>
-          <div class="info-item">
             <span class="info-label">交期</span>
             <span class="info-value">{{ order.deadline || '-' }}</span>
           </div>

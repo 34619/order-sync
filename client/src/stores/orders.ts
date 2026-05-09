@@ -14,7 +14,7 @@ export const useOrdersStore = defineStore('orders', () => {
     loading.value = true
     let query = supabase
       .from('orders')
-      .select('*, customer:customers(*), items:order_items(*), tasks:order_tasks(*)')
+      .select('*, items:order_items(*), tasks:order_tasks(*)')
       .order('created_at', { ascending: false })
 
     if (filters?.status) {
@@ -33,7 +33,7 @@ export const useOrdersStore = defineStore('orders', () => {
     loading.value = true
     const { data } = await supabase
       .from('orders')
-      .select('*, customer:customers(*), items:order_items(*), tasks:order_tasks(*)')
+      .select('*, items:order_items(*), tasks:order_tasks(*)')
       .eq('id', id)
       .single()
     currentOrder.value = data as Order | null
@@ -42,7 +42,6 @@ export const useOrdersStore = defineStore('orders', () => {
 
   async function createOrder(data: {
     order_number: string
-    customer_id: string
     deadline?: string
     priority?: 'normal' | 'urgent'
     notes?: string
@@ -53,7 +52,6 @@ export const useOrdersStore = defineStore('orders', () => {
       .from('orders')
       .insert({
         order_number: data.order_number,
-        customer_id: data.customer_id,
         deadline: data.deadline,
         priority: data.priority,
         notes: data.notes,

@@ -14,17 +14,6 @@ export interface Profile {
   created_at: string
 }
 
-export interface Customer {
-  id: string
-  name: string
-  contact: string | null
-  phone: string | null
-  address: string | null
-  notes: string | null
-  created_by: string
-  created_at: string
-}
-
 export interface OrderItem {
   id: string
   order_id: string
@@ -50,7 +39,6 @@ export interface Order {
   created_by: string
   created_at: string
   updated_at: string
-  customer?: Customer | null
   items?: OrderItem[]
   tasks?: OrderTask[]
 }
