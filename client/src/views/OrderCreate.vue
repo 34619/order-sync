@@ -56,12 +56,13 @@ function removeItem(index: number) {
 }
 
 async function handleSubmit() {
-  if (!form.value.order_number || !form.value.customer_id) return
+  if (!form.value.order_number) { alert('请填写订单单号'); return }
+  if (!form.value.customer_id) { alert('请选择客户'); return }
   const validItems = items.value.filter(i => i.product_name && i.quantity > 0)
-  if (validItems.length === 0) return
+  if (validItems.length === 0) { alert('请至少填写一个产品名称和数量'); return }
 
   const selectedDepts = departments.value.filter(d => d.checked).map(d => d.key)
-  if (selectedDepts.length === 0) return
+  if (selectedDepts.length === 0) { alert('请至少选择一个派发部门'); return }
 
   submitting.value = true
   try {
