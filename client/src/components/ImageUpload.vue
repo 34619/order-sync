@@ -47,6 +47,7 @@ async function handleFileChange(e: Event) {
 
     if (uploadError) {
       error.value = '上传失败: ' + uploadError.message
+      alert('图片上传失败: ' + uploadError.message)
       return
     }
 
@@ -57,6 +58,7 @@ async function handleFileChange(e: Event) {
   } catch (e: any) {
     console.error('上传异常:', e)
     error.value = e.message || '上传失败'
+    alert('图片上传异常: ' + (e.message || '未知错误'))
   } finally {
     uploading.value = false
     input.value = ''
